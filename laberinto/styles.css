@@ -1,0 +1,35 @@
+table.puzzle {
+  border-collapse: collapse;
+  border: 1px solid #000;
+}
+
+table.puzzle td {
+  width: 9px;
+  height: 9px;
+  text-align: center;
+  font-size: 11px;
+}
+
+#solutionContainer {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#solutionContainer > div {
+  margin: 10px;
+}
+
+#newStateBtn, #findSolution {
+  margin-top: 15px;
+}
+
+#disclaimer {
+  margin-top: 15px;
+}
+
+.container { 
+  width: 100%;
+  min-width: 320px;
+  margin: 0 auto;
+}
+

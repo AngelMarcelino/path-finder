@@ -1,0 +1,11 @@
+EJECUTAR EL PROYECTO
+
+para ejecutar el proyecto simplemente se debe de abrir el archivo index.html en un explorador web
+
+COMPILAR EL PROYECTO
+
+para compilar el proyecto se deberá tener instalado nodejs, luego ejecutar en una ventana de comandos
+ubicada en la raíz del proyecto el comando 'npm install' y posteriormente ejecutar el comando 'npm run webpack'
+esto lo que hará es generar el archivo build/main-bundle.js que es el compilado y empaquetado del código fuente 
+ubicado en la carpeta src.
+
