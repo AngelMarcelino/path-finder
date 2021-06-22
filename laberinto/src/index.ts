@@ -110,7 +110,7 @@ function generateNewInitialState() {
       y: LENGTH - 1,
     },
     {
-      x: LENGTH - 1,
+      x: 0,
       y: 0,
     }
   );

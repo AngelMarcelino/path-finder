@@ -4,6 +4,7 @@ import { AbstractDS } from "./data-structures/abstract-ds";
 import { Queue } from "./data-structures/queue";
 import { Stack } from "./data-structures/stack";
 import { getSerial, Point } from "./point";
+import * as PriorityQueueJs from "priorityqueuejs";
 
 export enum Strategy {
   BFS = "BFS",
@@ -116,6 +117,69 @@ function AStar(initial: Point, objective: Point, maze: Maze) {
   throw new Error("Fail");
 }
 
+function Dijstra(initial: Point, objective: Point, maze: Maze) {
+  let seen = {};
+  let currentPriority = {};
+  const queue = new PriorityQueueJs((a: Node, b: Node) => {
+    return (
+      b.deepth - a.deepth
+    );
+  });
+  let queueSize = 1;
+  enq(
+    queue,
+    currentPriority,
+    createNode(initial, null, null, 0, 0),
+  );
+  while (queueSize) {
+    let u = deq(queue, currentPriority);
+    queueSize--;
+    if (getSerial(u.state) == getSerial(objective)) {
+      return solution(u);
+    }
+    let successors = expand(u, maze);
+    successors = successors.filter((e) => !(getSerial(e.state) in seen));
+    queueSize += successors.length;
+    successors.forEach((element) => {
+      enq(
+        queue,
+        currentPriority,
+        element,
+      );
+    });
+
+    for (let i = 0; i < successors.length; i++) {
+      let successor = successors[i];
+      seen[getSerial(successor.state)] = true;
+      let alt = u.deepth + 1;
+      if (alt < successor.deepth) {
+        enq(queue, currentPriority, {...successor, deepth: alt});
+      }
+    }
+  }
+  throw new Error("Fail");
+}
+
+function deq(queue: PriorityQueueJs<Node>, tracker: any) {
+  while (true) {
+    let result = queue.deq();
+    if (
+      result.deepth == tracker[getSerial(result.state)]
+    ) {
+      return result;
+    }
+  }
+}
+
+function enq(
+  queue: PriorityQueueJs<Node>,
+  tracker: any,
+  element: Node,
+) {
+  queue.enq(element);
+  tracker[getSerial(element.state)] = element.deepth;
+}
+
 function insertSorted(list: string[], value: string) {
   let start = 0; // first index in array
   let end = list.length - 1; // the last index in the array
@@ -197,6 +261,6 @@ export function solve(
   objective: Point,
   maze: Maze
 ) {
-  let result = AStar(origin, objective, maze);
+  let result = Dijstra(origin, objective, maze);
   return result;
 }
