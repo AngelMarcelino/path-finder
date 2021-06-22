@@ -1,9 +1,9 @@
-
 import { Puzzle, Direction, LENGTH } from "./puzzle";
 import { Node } from "./node";
 import { AbstractDS } from "./data-structures/abstract-ds";
 import { Queue } from "./data-structures/queue";
 import { Stack } from "./data-structures/stack";
+import * as PriorityQueueJs from "priorityqueuejs";
 
 export enum Strategy {
   BFS = "BFS",
@@ -86,51 +86,86 @@ function f(node: Node, objective: Puzzle) {
   return g(node, objective) + h(node, objective);
 }
 
-function AStar(initial: Puzzle, objective: Puzzle) {
-  const visited = {};
-  const unvisited: { [key: string]: Node } = {};
-  const keys = [];
-  unvisited[initial.getSerial()] = createNode(initial, null, null, 0);
-  unvisited[initial.getSerial()].f = f(
-    unvisited[initial.getSerial()],
-    objective
+function Dijstra(initial: Puzzle, objective: Puzzle) {
+  let seen = {};
+  let currentPriority = {};
+  const queue = new PriorityQueueJs((a: Node, b: Node) => {
+    return (
+      b.deepth - a.deepth
+    );
+  });
+  let queueSize = 1;
+  enq(
+    queue,
+    currentPriority,
+    createNode(initial, null, null, 0),
   );
-  insertSorted(keys, initial.getSerial());
-  let minKey = initial.getSerial();
-  while (keys.length !== 0) {
-    let current_node = getMinimun(unvisited, keys);
-    if (current_node.deepth > 25) {
-      throw new Error("Fail");
+  while (queueSize) {
+    let u = deq(queue, currentPriority);
+    queueSize--;
+    if (u.state.getSerial() == objective.getSerial()) {
+      return solution(u);
     }
-    if (current_node.state.getSerial() == objective.getSerial()) {
-      return solution(current_node);
-    } else {
-      let successors = expand(current_node);
-      successors.forEach((element) => {
-        if (!unvisited[element.state.getSerial()]) {
-          unvisited[element.state.getSerial()] = element;
-          insertSorted(keys, element.state.getSerial());
-        }
-      });
-      for (let i = 0; i < successors.length; i++) {
-        let successor = successors[i];
-        if (!visited[successor.state.getSerial()]) {
-          let new_g_score = current_node.deepth + 1;
-          if (new_g_score < unvisited[successor.state.getSerial()].deepth) {
-            unvisited[successor.state.getSerial()].deepth = new_g_score;
-            unvisited[successor.state.getSerial()].f = f(successor, objective);
-          }
-        }
+    let successors = expand(u);
+    successors = successors.filter((e) => !(e.state.getSerial() in seen));
+    queueSize += successors.length;
+    successors.forEach((element) => {
+      enq(
+        queue,
+        currentPriority,
+        element,
+      );
+    });
+
+    for (let i = 0; i < successors.length; i++) {
+      let successor = successors[i];
+      seen[successor.state.getSerial()] = true;
+      let alt = u.deepth + 1;
+      if (alt < successor.deepth) {
+        enq(queue, currentPriority, {...successor, deepth: alt});
       }
-      visited[current_node.state.getSerial()] = current_node;
-      deleteFromList(keys, current_node.state.getSerial());
-      delete unvisited[current_node.state.getSerial()];
     }
   }
   throw new Error("Fail");
 }
 
-function insertSorted(list: string[], value: string) {
+function deq(queue: PriorityQueueJs<Node>, tracker: any) {
+  while (true) {
+    let result = queue.deq();
+    if (
+      result.deepth == tracker[result.state.getSerial()]
+    ) {
+      return result;
+    }
+  }
+}
+
+function enq(
+  queue: PriorityQueueJs<Node>,
+  tracker: any,
+  element: Node,
+) {
+  queue.enq(element);
+  tracker[element.state.getSerial()] = element.deepth;
+}
+
+function getMinAndRemoveFound(list: Node[], distances: any) {
+  let minValue = Number.MAX_VALUE;
+  let minNode: Node = null;
+  let minIndex = -1;
+  for (let i = 0; i < list.length; i++) {
+    let distance = distances[list[i].state.getSerial()];
+    if (distance < minValue) {
+      minValue = distance;
+      minNode = list[i];
+      minIndex = i;
+    }
+  }
+  list.splice(minIndex, 1);
+  return minNode;
+}
+
+function insertSorted(list: number[], value: number) {
   let start = 0; // first index in array
   let end = list.length - 1; // the last index in the array
   while (start <= end) {
@@ -146,7 +181,7 @@ function insertSorted(list: string[], value: string) {
   list.splice(start, 0, value);
 }
 
-function deleteFromList(list: string[], value: string) {
+function deleteFromList(list: number[], value: number) {
   let start = 0; // first index in array
   let end = list.length - 1; // the last index in the array
   while (start <= end) {
@@ -175,6 +210,6 @@ function getMinimun(object: { [key: string]: Node }, keys: string[]) {
 
 export function solve(puzzle: Puzzle, objective: Puzzle) {
   let result = null;
-  result = AStar(puzzle, objective);
+  result = Dijstra(puzzle, objective);
   return result;
 }

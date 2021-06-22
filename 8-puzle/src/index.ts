@@ -35,9 +35,9 @@ class Main {
   setInitialState(initialState: Puzzle) {
     let initial = initialState;
     // initial = new Puzzle([
-    //   [1 ,2, 5],
-    //   [8, 6, 3],
-    //   [4, null, 7 ]
+    //   [6 ,7, 3],
+    //   [1, 4, 2],
+    //   [8, null, 5 ]
     // ]);
     solutionContainer.innerHTML = "";
     initialContainer.innerHTML = "";
